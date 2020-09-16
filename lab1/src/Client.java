@@ -10,16 +10,12 @@ import java.util.Set;
 
 public class Client {
 
-    public enum TYPE{
-        WELCOME
-    }
+    private static int countTypes = 100;
+    private static byte[] intToByte = new byte[countTypes];
 
-    static int countTypes = 100;
-    static byte[] intToByte = new byte[countTypes];
+    private static Map<String, Integer> aliveClients = new HashMap<>();
 
-    static Map<String, Integer> aliveClients = new HashMap<>();
-
-    static ActionListener sendWelcome = new ActionListener() {
+    private static ActionListener sendWelcome = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             sendWelcomeMessage();
@@ -40,9 +36,7 @@ public class Client {
 
     private static MulticastSocket s;
     private static MulticastSocket r;
-    static SocketAddress socketAddr;
-    static SocketAddress socketAddr2;
-
+    private static SocketAddress socketAddr;
 
     public static void main(String[] args) {
 
@@ -51,7 +45,7 @@ public class Client {
         }
 
         String ip = args[0];
-        System.out.println(ip);
+        System.out.println("My: " + ip);
         int port1 = 6789;
         int port2 = 6790;
         try {
@@ -59,7 +53,7 @@ public class Client {
             s = new MulticastSocket();
             r = new MulticastSocket();
             socketAddr = new InetSocketAddress(groupAddress, port1);
-            socketAddr2 = new InetSocketAddress(groupAddress, port2);
+            SocketAddress socketAddr2 = new InetSocketAddress(groupAddress, port2);
             s.joinGroup(socketAddr, NetworkInterface.getByInetAddress(groupAddress));
             r.joinGroup(socketAddr2, NetworkInterface.getByInetAddress(groupAddress));
         } catch (IOException e) {
@@ -88,18 +82,17 @@ public class Client {
         }
     }
 
-    static ActionListener checkClients = new ActionListener() {
+    private static ActionListener checkClients = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             checkIfClientAlive();
         }
     };
 
-    private static int validLoose = 10;
-
     private static void checkIfClientAlive(){
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
-            if(entry.getValue()<validLoose){
+            int validLoose = 10;
+            if(entry.getValue()< validLoose){
                 System.out.println("Client disconnect: " + entry.getValue());
             }
         }
