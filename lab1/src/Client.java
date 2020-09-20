@@ -18,6 +18,7 @@ public class Client {
     private static ActionListener sendWelcome = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+            System.out.println("Send message");
             sendWelcomeMessage();
         }
     };
@@ -46,8 +47,8 @@ public class Client {
 
         String ip = args[0];
         System.out.println("My: " + ip);
-        int port1 = 6789;
-        int port2 = 6790;
+        int port1 = 6791;
+        int port2 = 6792;
         try {
             InetAddress groupAddress = InetAddress.getByName(ip);
             s = new MulticastSocket();
@@ -62,6 +63,8 @@ public class Client {
 
         Timer timer1 = new Timer(1000, checkClients);
         Timer timer2 = new Timer(1000, sendWelcome);
+        timer1.start();
+        timer2.start();
 
         while(true){
             byte[] buf = new byte[1000];
@@ -85,6 +88,8 @@ public class Client {
     private static ActionListener checkClients = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
+
+            System.out.println("Gett meessages");
             checkIfClientAlive();
         }
     };
