@@ -18,7 +18,6 @@ public class Client {
     private static ActionListener sendWelcome = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("Send message");
             sendWelcomeMessage();
         }
     };
@@ -88,8 +87,6 @@ public class Client {
     private static ActionListener checkClients = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-
-            System.out.println("Gett meessages");
             checkIfClientAlive();
         }
     };
