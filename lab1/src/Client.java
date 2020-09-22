@@ -1,103 +1,97 @@
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.*;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-public class Client {
+public class Client extends Thread{
 
-    private static int countTypes = 100;
-    private static byte[] intToByte = new byte[countTypes];
+    private final Map<String, Integer> aliveClients = new HashMap<>();
 
-    private static Map<String, Integer> aliveClients = new HashMap<>();
+    private final ActionListener sendWelcome = e -> sendWelcomeMessage();
+    private final ActionListener checkClients = e -> checkIfClientAlive();
 
-    private static ActionListener sendWelcome = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            sendWelcomeMessage();
-        }
-    };
 
-    private static void sendWelcomeMessage(){
+    private  MulticastSocket s;
+    private  MulticastSocket r;
+    private  SocketAddress socketAddr;
+
+
+    private  void sendWelcomeMessage(){
         byte[] buf = new byte[1000];
-        DatagramPacket welcome = new DatagramPacket(buf, buf.length);
         buf[0] = 1;
-        welcome.setSocketAddress(socketAddr);
+        DatagramPacket welcome = new DatagramPacket(buf, buf.length, groupAddress, port);
+        welcome.setData(buf);
+        //welcome.setSocketAddress(socketAddr);
         try {
             s.send(welcome);
+            System.out.println("Message send");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static MulticastSocket s;
-    private static MulticastSocket r;
-    private static SocketAddress socketAddr;
-
-    public static void main(String[] args) {
-
-        for(int i = 0; i<countTypes; i++){
-            intToByte[i] = (byte) 0;
-        }
-
-        String ip = args[0];
+    String ip;
+    public void setIp(String _ip){
+        ip = _ip;
+    }
+    InetAddress groupAddress;
+    int port = 6789;
+    public void run(){
         System.out.println("My: " + ip);
-        int port1 = 6791;
-        int port2 = 6792;
+        int port1 = 6789;
+        int port2 = 6790;
         try {
-            InetAddress groupAddress = InetAddress.getByName(ip);
-            s = new MulticastSocket();
-            r = new MulticastSocket();
-            socketAddr = new InetSocketAddress(groupAddress, port1);
-            SocketAddress socketAddr2 = new InetSocketAddress(groupAddress, port2);
-            s.joinGroup(socketAddr, NetworkInterface.getByInetAddress(groupAddress));
-            r.joinGroup(socketAddr2, NetworkInterface.getByInetAddress(groupAddress));
+            groupAddress = InetAddress.getByName(ip);
+            s = new MulticastSocket(6789);
+            r = new MulticastSocket(port2);
+            //socketAddr = new InetSocketAddress(groupAddress, port1);
+            //SocketAddress socketAddr2 = new InetSocketAddress(groupAddress, port2);
+            s.joinGroup(groupAddress);
+            r.joinGroup(groupAddress);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Timer timer1 = new Timer(1000, checkClients);
+        Timer timer1 = new Timer(10000, checkClients);
         Timer timer2 = new Timer(1000, sendWelcome);
         timer1.start();
         timer2.start();
 
-        while(true){
-            byte[] buf = new byte[1000];
-            DatagramPacket dp = new DatagramPacket(buf, buf.length);
-            try {
-                r.receive(dp);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String host = dp.getAddress().getHostName();
-            if(!aliveClients.containsKey(host)){
-                System.out.println("Client connected: " + host);
-                aliveClients.put(host, 1);
-            }else {
-                Integer i = aliveClients.get(host) + 1;
-                aliveClients.replace(host, i);
-            }
+        //while(true){
+        byte[] buf = new byte[1000];
+        DatagramPacket dp = new DatagramPacket(buf, buf.length);
+        try {
+            System.out.println("try block");
+            s.receive(dp);
+            System.out.println("receive");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        String host = dp.getAddress().getHostName();
+        if(!aliveClients.containsKey(host)){
+            System.out.println("Client connected: " + host);
+            aliveClients.put(host, 1);
+        }else {
+            aliveClients.replace(host, aliveClients.get(host) + 1);
+        }
+        //}
     }
 
-    private static ActionListener checkClients = new ActionListener() {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            checkIfClientAlive();
-        }
-    };
-
-    private static void checkIfClientAlive(){
+    private  void checkIfClientAlive(){
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
-            int validLoose = 10;
-            if(entry.getValue()< validLoose){
+            int validLoose = 0;
+            if(entry.getValue() == validLoose) {
                 System.out.println("Client disconnect: " + entry.getValue());
+                aliveClients.remove(entry);
             }
         }
+
+        for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
+            aliveClients.replace(entry.getKey(),0);
+        }
+
     }
 
 }
