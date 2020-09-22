@@ -24,7 +24,6 @@ public class Client extends Thread{
         welcome.setData(buf);
         try {
             s.send(welcome);
-            System.out.println("Message send");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,15 +70,15 @@ public class Client extends Thread{
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
             int validLoose = 0;
             if(entry.getValue() == validLoose) {
-                System.out.println("Client disconnect: " + entry.getValue());
-                aliveClients.remove(entry);
+                System.out.println("Client disconnect: " + entry.getKey());
             }
         }
+
+        aliveClients.entrySet().removeIf(e->e.getValue()==0);
 
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
             aliveClients.replace(entry.getKey(),0);
         }
 
     }
-
 }
