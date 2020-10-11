@@ -47,7 +47,7 @@ public class Test {
         //Set MAX CONNECTION for SERVER
         int MAX_CONNECTION = 4;
         //Set requirement port for SERVER
-        int PORT = 20;
+        int PORT = Integer.parseInt(args[0]);
 
         Server server = Server.getInstance();
         //Server server = new Server(PORT, MAX_CONNECTION);

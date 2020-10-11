@@ -9,9 +9,16 @@ public class Client implements Runnable {
 
     final byte version = 0x04;
     final byte command = 0x01;
-    final int port_number = 80;
+    int port = 80;
     Integer ip = 2130706433;//127.0.0.1
-    String ip_tg = "[l8�";
+    String server_ip;
+    String file_name;
+
+    Client(String _file_name, String _ip, int _port){
+        server_ip = _ip;
+        file_name = _file_name;
+        port = _port;
+    }
 
     ByteBuffer buffer;
     String ID = "vizir";
@@ -45,7 +52,6 @@ public class Client implements Runnable {
             send_buffer(server);
         }
     }
-
 
     public void make_SOCKS5(SocketChannel server) throws IOException {
         buffer = ByteBuffer.allocate(100);
@@ -91,7 +97,6 @@ public class Client implements Runnable {
 
     }
 
-
     public void make_SOCKS4(SocketChannel server) throws IOException {
         buffer = ByteBuffer.allocate(1000);
         buffer.put((byte)0x04).put((byte)0x01).putShort((short)81).putInt(2130706433).put(ID.getBytes());
@@ -115,10 +120,8 @@ public class Client implements Runnable {
         try {
             byte[] ip_v4 = ByteBuffer.allocate(4).putInt(ip).array();
             ByteBuffer tg = ByteBuffer.allocate(4).put(new Integer(149).byteValue()).put(new Integer(154).byteValue()).put(new Integer(167).byteValue()).put(new Integer(51).byteValue());
-            SocketChannel soc = SocketChannel.open(new InetSocketAddress(InetAddress.getByAddress(ip_v4), 20));
+            SocketChannel soc = SocketChannel.open(new InetSocketAddress(InetAddress.getByName(server_ip), port));
 
-
-            String file_name = "1.txt";
             File file = new File(file_name);
             long length = file.length();
             FileInputStream reader = new FileInputStream(file);
@@ -131,8 +134,6 @@ public class Client implements Runnable {
 
         } catch (IOException e) {
             e.printStackTrace();
-        }catch (Exception e){
-
         }
 
     }
