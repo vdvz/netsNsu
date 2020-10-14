@@ -27,6 +27,7 @@ public class Client implements Runnable {
     private void send_buffer(SocketChannel socket) throws IOException {
         buffer.flip();
         System.out.println("SEND: " + socket.write(buffer));
+        buffer.clear();
     }
 
     public void receive_buffer(SocketChannel socket) throws IOException {
@@ -126,6 +127,13 @@ public class Client implements Runnable {
             long length = file.length();
             FileInputStream reader = new FileInputStream(file);
             makeFile(file_name, length, soc, reader);
+
+            receive_buffer(soc);
+            if(buffer.get() == (byte)0x00){
+                System.out.println("cool");
+            }else
+                System.out.println("fail");
+
 
             soc.shutdownOutput();
             soc.shutdownInput();

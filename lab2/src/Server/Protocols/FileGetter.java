@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class FileGetter implements FileGetter_I {
 
     private final long SIZE;
-    private final String File_Name;
+    private String File_Name;
     private final SocketChannel client;
     private final ByteBuffer buffer;
     private MySelector client_selector = null;
@@ -37,8 +37,19 @@ public class FileGetter implements FileGetter_I {
         client = _client;
         buffer = _buffer;
         SIZE = _size;
-        File_Name = file_name;
+        File_Name = file_name.substring(file_name.lastIndexOf('/'), file_name.length());
         try {
+            File tmp = new File("uploads/"+File_Name);
+            if(tmp.exists()){
+                int i = 1;
+                tmp = new File("uploads/Копия-"+i+File_Name);
+                while(tmp.exists()){
+                    i++;
+                    tmp = new File("uploads/Копия-"+i+File_Name);
+                }
+            }
+            File_Name = tmp.getName();
+
             writer = new FileOutputStream("uploads/"+File_Name);
         } catch (IOException e) {
             throw new End();
@@ -105,22 +116,16 @@ public class FileGetter implements FileGetter_I {
         int sub = -1;
         int a = 0;
         while((a=from.read(buffer))>0){
-            if(!buffer.hasRemaining()){
+            int pos = buffer.position();
+            if(pos!=0){
                 buffer.flip();
                 byte[] array = buffer.array();
-                sub += array.length;
-                writer.write(array, 1, array.length);
+                sub += pos;
+                writer.write(array, 0, pos);
                 buffer.clear();
             }
         }
-        int pos = buffer.position();
-        if(pos!=0){
-            buffer.flip();
-            byte[] array = buffer.array();
-            sub += pos;
-            writer.write(array, 0, pos);
-            buffer.clear();
-        }
+
 
         if(sub != -1){
             getting_bytes += sub+1;
