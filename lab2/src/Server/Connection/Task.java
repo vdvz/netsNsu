@@ -2,8 +2,6 @@ package Server.Connection;
 
 import Exceptions.End;
 import Server.Protocols.FileGetter;
-import Server.Protocols.Socks4;
-import Server.Protocols.Socks5;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

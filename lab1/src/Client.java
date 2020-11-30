@@ -24,6 +24,7 @@ public class Client extends Thread{
         welcome.setData(buf);
         try {
             s.send(welcome);
+            //System.out.println("Message send");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -43,8 +44,8 @@ public class Client extends Thread{
             e.printStackTrace();
         }
 
-        Timer timer1 = new Timer(3000, checkClients);
-        Timer timer2 = new Timer(500, sendWelcome);
+        Timer timer1 = new Timer(10000, checkClients);
+        Timer timer2 = new Timer(1000, sendWelcome);
         timer1.start();
         timer2.start();
 
@@ -70,14 +71,15 @@ public class Client extends Thread{
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
             int validLoose = 0;
             if(entry.getValue() == validLoose) {
-                String key = entry.getKey();
-                System.out.println("Client disconnect: " + key);
-                aliveClients.remove(key);
+                System.out.println("Client disconnect: " + entry.getValue());
+                aliveClients.remove(entry);
             }
         }
 
         for (Map.Entry<String, Integer> entry: aliveClients.entrySet()) {
             aliveClients.replace(entry.getKey(),0);
         }
+
     }
+
 }

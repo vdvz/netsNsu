@@ -3,7 +3,7 @@ package Server.Protocols;
 import Exceptions.End;
 import Server.Selectors.MySelector;
 import Server.Server;
-import javafx.util.Pair;
+
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,14 +19,14 @@ import java.util.concurrent.locks.ReentrantLock;
 public class FileGetter implements FileGetter_I {
 
     private final long SIZE;
-    private final String File_Name;
+    private String File_Name;
     private final SocketChannel client;
     private final ByteBuffer buffer;
     private MySelector client_selector = null;
     private volatile boolean isClose = false;
 
     private final FileOutputStream writer;
-    private final int timeout = 100000;
+    private final int timeout = 5000;
 
     private long getting_bytes;
 
@@ -37,9 +37,20 @@ public class FileGetter implements FileGetter_I {
         client = _client;
         buffer = _buffer;
         SIZE = _size;
-        File_Name = file_name;
+        File_Name = file_name.substring(file_name.lastIndexOf('/'), file_name.length());
         try {
-            writer = new FileOutputStream("uploads/"+file_name);
+            File tmp = new File("uploads/"+File_Name);
+            if(tmp.exists()){
+                int i = 1;
+                tmp = new File("uploads/Копия-"+i+File_Name);
+                while(tmp.exists()){
+                    i++;
+                    tmp = new File("uploads/Копия-"+i+File_Name);
+                }
+            }
+            File_Name = tmp.getName();
+
+            writer = new FileOutputStream("uploads/"+File_Name);
         } catch (IOException e) {
             throw new End();
         }
@@ -101,33 +112,21 @@ public class FileGetter implements FileGetter_I {
 
 
     @Override
-    public void receive_file(SocketChannel from)
-    {
+    public void receive_file(SocketChannel from) throws IOException {
         int sub = -1;
-        try {
-            while(from.read(buffer)>0){
-                if(!buffer.hasRemaining()){
-                    buffer.flip();
-                    byte[] array = buffer.array();
-                    sub += array.length;
-                    writer.write(array, 1, array.length);
-                    buffer.clear();
-                }
-            }
-            if(buffer.position()!=0){
+        int a = 0;
+        while((a=from.read(buffer))>0){
+            int pos = buffer.position();
+            if(pos!=0){
                 buffer.flip();
                 byte[] array = buffer.array();
-                sub += array.length;
-                writer.write(array);
+                sub += pos;
+                writer.write(array, 0, pos);
                 buffer.clear();
             }
-        } catch (IOException e) {
-            try {
-                shutdown();
-            } catch (End end) {
-                end.printStackTrace();
-            }
         }
+
+
         if(sub != -1){
             getting_bytes += sub+1;
             setValidFLag();
@@ -179,7 +178,6 @@ public class FileGetter implements FileGetter_I {
             lock.unlock();
         }
     }
-
 
     public void setValidFLag(){
         lock.lock();
