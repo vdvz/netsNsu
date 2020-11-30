@@ -37,7 +37,7 @@ public class Node {
     int resendDelay = 100;
     ActionListener resendMsg = e -> sendingMessages.forEach((key, value) -> value.forEach(socketAddress -> {
         byte[] sub = receivedMessages.get(key).getData();
-        send(socketAddress, ByteBuffer.wrap(sub).position(sub.length));
+        send(socketAddress, (ByteBuffer) ByteBuffer.wrap(sub).position(sub.length));
     }));
 
     int checkAliveDelay = 100;
